@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey Team Tracking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <div id="map" style="height: 500px;"></div>
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBd7Bk5bMc8s-1Ji5e-IGnk_qiagkTNSQ0",
+            authDomain: "surveyteamv01.firebaseapp.com",
+            projectId: "surveyteamv01",
+            storageBucket: "surveyteamv01.appspot.com",
+            messagingSenderId: "179824390314",
+            appId: "1:179824390314:web:7f64105b2f6699763020d3",
+            measurementId: "G-HXTDVVY4PS"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Initialize the map
+        const map = L.map('map').setView([0, 0], 2); // Centered on the world
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fetch real-time location data from Firestore
+        db.collection('locations').onSnapshot((snapshot) => {
+            snapshot.docs.forEach((doc) => {
+                const data = doc.data();
+                const marker = L.marker([data.lat, data.lng]).addTo(map);
+                marker.bindPopup(`User: ${data.user}`);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -25,12 +25,36 @@
         const db = firebase.firestore();
 
         // Initialize the map
-        const map = L.map('map').setView([0, 0], 2); // Centered on the world
+        const map = L.map('map').setView([0, 0], 2);  // World-centered view
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data © OpenStreetMap contributors'
         }).addTo(map);
 
-        // Fetch real-time location data from Firestore
+        // Watch user position and update Firestore
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition((position) => {
+                const userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    user: 'John Doe',
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Send the location to Firebase
+                db.collection('locations').doc('JohnDoe').set(userLocation)
+                .then(() => {
+                    console.log("Location successfully written!");
+                }).catch((error) => {
+                    console.error("Error writing location: ", error);
+                });
+            }, (error) => {
+                console.error("Error getting location: ", error);
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+
+        // Display team members on the map
         db.collection('locations').onSnapshot((snapshot) => {
             snapshot.docs.forEach((doc) => {
                 const data = doc.data();
